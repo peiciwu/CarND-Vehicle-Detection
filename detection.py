@@ -19,21 +19,14 @@ def find_cars(img, ystart, ystop, scale, svc, X_scaler, colorspace, orient,
         imshape = ctrans_tosearch.shape
         ctrans_tosearch = cv2.resize(ctrans_tosearch, (np.int(imshape[1]/scale), np.int(imshape[0]/scale)))
         
-    ##FIXME: my own changes
-    #if hog_channel == 'ALL':
-       #channel = [ctrans_tosearch[:,:,0], ctrans_tosearch[:,:,1], ctrans_tosearch[:,:,2]]
-    #else:
-       #channel = [ctrans_tosearch[:,:,hog_channel]]
-    ch1 = ctrans_tosearch[:,:,0]
-    ch2 = ctrans_tosearch[:,:,1]
-    ch3 = ctrans_tosearch[:,:,2]
+    if hog_channel == 'ALL':
+       channel = [ctrans_tosearch[:,:,0], ctrans_tosearch[:,:,1], ctrans_tosearch[:,:,2]]
+    else:
+       channel = [ctrans_tosearch[:,:,hog_channel]]
 
     # Define blocks and steps as above
-    ##FIXME: my own changes
-    #nxblocks = (channel[0].shape[1] // pix_per_cell) - cell_per_block + 1
-    #nyblocks = (channel[0].shape[0] // pix_per_cell) - cell_per_block + 1 
-    nxblocks = (ch1.shape[1] // pix_per_cell) - cell_per_block + 1
-    nyblocks = (ch1.shape[0] // pix_per_cell) - cell_per_block + 1 
+    nxblocks = (channel[0].shape[1] // pix_per_cell) - cell_per_block + 1
+    nyblocks = (channel[0].shape[0] // pix_per_cell) - cell_per_block + 1 
     nfeat_per_block = orient*cell_per_block**2
     
     # 64 was the orginal sampling rate, with 8 cells and 8 pix per cell
@@ -44,31 +37,22 @@ def find_cars(img, ystart, ystop, scale, svc, X_scaler, colorspace, orient,
     nysteps = (nyblocks - nblocks_per_window) // cells_per_step
     
     # Compute individual channel HOG features for the entire image
-    ##FIXME: my own changes
-    #hog = []
-    #for ch in channel:
-        #hog.append(get_hog_features(ch, orient, pix_per_cell, cell_per_block, feature_vec=False))
-    hog1 = get_hog_features(ch1, orient, pix_per_cell, cell_per_block,feature_vec=False)
-    hog2 = get_hog_features(ch2, orient, pix_per_cell, cell_per_block,feature_vec=False)
-    hog3 = get_hog_features(ch3, orient, pix_per_cell, cell_per_block,feature_vec=False)
+    hog = []
+    for ch in channel:
+        hog.append(get_hog_features(ch, orient, pix_per_cell, cell_per_block, feature_vec=False))
     
     for xb in range(nxsteps):
         for yb in range(nysteps):
             ypos = yb*cells_per_step
             xpos = xb*cells_per_step
             # Extract HOG for this patch
-            ##FIXME: my own changes
-            #hog_feat = []
-            #for h in hog:
-                #hog_feat.append(h[ypos:ypos+nblocks_per_window, xpos:xpos+nblocks_per_window].ravel())
-            #if hog_channel == 'ALL':
-                #hog_features = np.hstack((hog_feat[0], hog_feat[1], hog_feat[2]))
-            #else:
-                #hog_features = hog_feat[0]
-            hog_feat1 = hog1[ypos:ypos+nblocks_per_window, xpos:xpos+nblocks_per_window].ravel() 
-            hog_feat2 = hog2[ypos:ypos+nblocks_per_window, xpos:xpos+nblocks_per_window].ravel() 
-            hog_feat3 = hog3[ypos:ypos+nblocks_per_window, xpos:xpos+nblocks_per_window].ravel() 
-            hog_features = np.hstack((hog_feat1, hog_feat2, hog_feat3))
+            hog_feat = []
+            for h in hog:
+                hog_feat.append(h[ypos:ypos+nblocks_per_window, xpos:xpos+nblocks_per_window].ravel())
+            if hog_channel == 'ALL':
+                hog_features = np.hstack((hog_feat[0], hog_feat[1], hog_feat[2]))
+            else:
+                hog_features = hog_feat[0]
 
             xleft = xpos*pix_per_cell
             ytop = ypos*pix_per_cell
@@ -111,8 +95,8 @@ print('Using:', 'spatial binning of', spatial, histbin,'histogram bins', orient,
 
 
 ystart = 400
-ystop = 656
-scale = 1
+ystop = 650
+scale = 1.5
 testFiles = glob.glob('test_images/*.jpg')
 for img_file in testFiles:
     image = mpimg.imread(img_file)

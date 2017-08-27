@@ -38,7 +38,7 @@ print(data_dict)
 colorspace = 'YCrCb' # Can be RGB, HSV, LUV, HLS, YUV, YCrCb
 spatial = 16 # number of spatial bins
 histbin = 32 # number of histogram bins
-orient = 8 # HOG orientations
+orient = 8 # numbre of HOG orientations bins (typically between 6 and 12)
 pix_per_cell = 8 # HOG pixels per cell
 cell_per_block = 2 # HOG cells per block
 hog_channel = 'ALL' # Can be 0, 1, 2, or 'ALL'
@@ -86,5 +86,5 @@ t2 = time.time()
 print(round(t2-t, 5), 'Seconds to predict', n_predict,'labels with SVC')
 
 # Save model and config
-#config = dict(colorspace=colorspace, spatial=spatial, histbin=histbin, orient=orient, pix_per_cell=pix_per_cell, cell_per_block=cell_per_block, hog_channel=hog_channel)
-#joblib.dump({'model':svc, 'config':config}, 'model2.sav')
+config = dict(colorspace=colorspace, spatial=spatial, histbin=histbin, orient=orient, pix_per_cell=pix_per_cell, cell_per_block=cell_per_block, hog_channel=hog_channel)
+joblib.dump({'model':svc, 'X_scaler':X_scaler, 'config':config}, 'model4.sav')

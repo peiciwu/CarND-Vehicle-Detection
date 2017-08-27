@@ -22,8 +22,7 @@ def color_hist(img, nbins=32, bins_range=(0, 256)):
     return hist_features
 
 # Define a function to return HOG features and visualization
-def get_hog_features(img, orient, pix_per_cell, cell_per_block, 
-                        vis=False, feature_vec=True):
+def get_hog_features(img, orient, pix_per_cell, cell_per_block, vis=False, feature_vec=True):
     # Call with two outputs if vis==True
     if vis == True:
         features, hog_image = hog(img, orientations=orient, pixels_per_cell=(pix_per_cell, pix_per_cell),
@@ -38,13 +37,8 @@ def get_hog_features(img, orient, pix_per_cell, cell_per_block,
         return features
 
 # Apply color convertion based on given color space.
-def convert_color(image, cspace, image_name=None):
-    if cspace == 'RGB':
-        if image_name != None and 'png' in image_name:
-            cvt_image = image.astype(np.float32)*255; # matplotlib image reads 'png' from scale 0 to 1. Convertes to 0 to 255.
-        else:
-            cvt_image = np.copy(image)
-    else:
+def convert_color(image, cspace):
+    if cspace != 'RGB':
         if cspace == 'HSV':
             cvt_image = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
         elif cspace == 'LUV':
@@ -68,8 +62,10 @@ def extract_features(imgs, cspace='RGB', spatial_size=(32, 32), hist_bins=32, hi
     for img_name in imgs:
         # Read in each one by one
         image = mpimg.imread(img_name)
+        if 'png' not in img_name:
+            image = image.astype(np.float32)/255
         # apply color conversion
-        feature_image = convert_color(image, cspace, img_name);
+        feature_image = convert_color(image, cspace);
 
 	# Apply bin_spatial() to get spatial color features
         spatial_features = bin_spatial(feature_image, size=spatial_size)
