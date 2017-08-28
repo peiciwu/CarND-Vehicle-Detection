@@ -37,7 +37,7 @@ print(data_dict)
 # Parameters for features extraction
 colorspace = 'YCrCb' # Can be RGB, HSV, LUV, HLS, YUV, YCrCb
 spatial = 16 # number of spatial bins
-histbin = 32 # number of histogram bins
+histbin = 16 # number of histogram bins
 orient = 8 # numbre of HOG orientations bins (typically between 6 and 12)
 pix_per_cell = 8 # HOG pixels per cell
 cell_per_block = 2 # HOG cells per block
@@ -65,8 +65,8 @@ y = np.hstack((np.ones(len(car_features)), np.zeros(len(notcar_features))))
 rand_state = np.random.randint(0, 100)
 X_train, X_test, y_train, y_test = train_test_split(scaled_X, y, test_size=0.2, random_state=rand_state)
 
-print('Using:', 'spatial binning of', spatial, histbin,'histogram bins', orient,'orientations',pix_per_cell,
-    'pixels per cell and', cell_per_block,'cells per block')
+print('Using colorspace:', colorspace, 'spatial binning of', spatial, histbin,'histogram bins', orient,'orientations',pix_per_cell,
+    'pixels per cell', cell_per_block,'cells per block', 'and hog channel', hog_channel)
 print('Feature vector length:', len(X_train[0]))
 # Use a linear SVC 
 svc = LinearSVC()
@@ -87,4 +87,4 @@ print(round(t2-t, 5), 'Seconds to predict', n_predict,'labels with SVC')
 
 # Save model and config
 config = dict(colorspace=colorspace, spatial=spatial, histbin=histbin, orient=orient, pix_per_cell=pix_per_cell, cell_per_block=cell_per_block, hog_channel=hog_channel)
-joblib.dump({'model':svc, 'X_scaler':X_scaler, 'config':config}, 'model4.sav')
+joblib.dump({'model':svc, 'X_scaler':X_scaler, 'config':config}, 'model5.sav')
