@@ -6,6 +6,7 @@ from sklearn.externals import joblib
 from scipy.ndimage.measurements import label
 from features_extract import convert_color, get_hog_features, bin_spatial, color_hist
 import glob
+from process_image import process_image
 
 # Define a single function that can extract features using hog sub-sampling and make predictions
 def find_cars(img, ystart, ystop, scale, svc, X_scaler, colorspace, orient,
@@ -162,3 +163,9 @@ for img_file in testFiles:
     plt.title('Filtered Detected image')
     plt.imshow(filter_img)
     plt.show(block=True)
+
+    # FIXME: for drawing lane lines
+    #lane_img = process_image(image, to_draw_img = filter_img)
+    #plt.title('Filtered Detected image with lane lines')
+    #plt.imshow(lane_img)
+    #plt.show(block=True)
