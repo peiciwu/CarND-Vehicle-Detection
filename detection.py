@@ -15,6 +15,8 @@ def find_cars(img, ystart, ystop, scale, svc, X_scaler, colorspace, orient,
     bbox_list = [] # Return a list of detected bounding boxes
     img = img.astype(np.float32)/255
     
+    #FIXME: pw debug
+    #img_tosearch = img[ystart:ystop,:,:]
     img_tosearch = img[ystart:ystop,:,:]
     ctrans_tosearch = convert_color(img_tosearch, cspace=colorspace)
     if scale != 1:
@@ -34,7 +36,8 @@ def find_cars(img, ystart, ystop, scale, svc, X_scaler, colorspace, orient,
     # 64 was the orginal sampling rate, with 8 cells and 8 pix per cell
     window = 64
     nblocks_per_window = (window // pix_per_cell) - cell_per_block + 1
-    cells_per_step = 2  # Instead of overlap, define how many cells to step
+    #cells_per_step = 2  # Instead of overlap, define how many cells to step
+    cells_per_step = 1  # Instead of overlap, define how many cells to step
     nxsteps = (nxblocks - nblocks_per_window) // cells_per_step
     nysteps = (nyblocks - nblocks_per_window) // cells_per_step
     
@@ -43,8 +46,8 @@ def find_cars(img, ystart, ystop, scale, svc, X_scaler, colorspace, orient,
     for ch in channel:
         hog.append(get_hog_features(ch, orient, pix_per_cell, cell_per_block, feature_vec=False))
     
-    for xb in range(nxsteps+1):
-        for yb in range(nysteps+1):
+    for xb in range(nxsteps):
+        for yb in range(nysteps):
             ypos = yb*cells_per_step
             xpos = xb*cells_per_step
             # Extract HOG for this patch
@@ -68,11 +71,16 @@ def find_cars(img, ystart, ystop, scale, svc, X_scaler, colorspace, orient,
 
             # Scale features and make a prediction
             test_features = X_scaler.transform(np.hstack((spatial_features, hist_features, hog_features)).reshape(1, -1))    
-            test_prediction = svc.predict(test_features)
-            #test_prediction = int(svc.decision_function(test_features) > 0.8)
+            #test_prediction = svc.predict(test_features)
+            #test_prediction = int(svc.decision_function(test_features) > 0.05)
+            #test_prediction = int(svc.decision_function(test_features) > 0.2)
+            #test_prediction = int(svc.decision_function(test_features) > 0.3)
+            #test_prediction = int(svc.decision_function(test_features) > 0.5)
+            #test_prediction = int(svc.decision_function(test_features) > 0.6)
+            test_prediction = int(svc.decision_function(test_features) > 0.7)
             
             if test_prediction == 1:
-                #print('decision_function:', svc.decision_function(test_features))
+                #print('decision_function:', np.min(svc.decision_function(test_features)))
                 xbox_left = np.int(xleft*scale)
                 ytop_draw = np.int(ytop*scale)
                 win_draw = np.int(window*scale)
@@ -86,25 +94,6 @@ def add_heat(heatmap, bbox_list):
         # Add += 1 for all pixels inside each bbox
         # Assuming each "box" takes the form ((x1, y1), (x2, y2))
         heatmap[box[0][1]:box[1][1], box[0][0]:box[1][0]] += 1
-        print("add_heat, box:", box)
-
-    print("after add, min:", np.min(heatmap), "max:", np.max(heatmap))
-
-    # Return updated heatmap
-    return heatmap
-
-def remove_heat(heatmap, bbox_list):
-    # Iterate through list of bboxes
-    for box in bbox_list:
-        # Decrease -= 1 for all pixels inside each bbox
-        # Assuming each "box" takes the form ((x1, y1), (x2, y2))
-        heatmap[box[0][1]:box[1][1], box[0][0]:box[1][0]] -= 1
-        print("remove_heat, box:", box)
-        if np.min(heatmap) < 0:
-            print("found negative, argmin0:", np.argmin(heatmap, 0), "argmin1:",
-                    np.argmin(heatmap,1))
-
-    print("after remove, min:", np.min(heatmap), "max:", np.max(heatmap))
 
     # Return updated heatmap
     return heatmap
@@ -115,7 +104,8 @@ def apply_threshold(heatmap, threshold):
     # Return thresholded map
     return heatmap
 
-def draw_labeled_bboxes(img, labels):
+def get_labeled_bboxes(labels):
+    bbox_list = []
     # Iterate through all detected cars
     for car_number in range(1, labels[1]+1):
         # Find pixels with each car_number label value
@@ -125,10 +115,9 @@ def draw_labeled_bboxes(img, labels):
         nonzerox = np.array(nonzero[1])
         # Define a bounding box based on min/max x and y
         bbox = ((np.min(nonzerox), np.min(nonzeroy)), (np.max(nonzerox), np.max(nonzeroy)))
-        # Draw the box on the image
-        cv2.rectangle(img, bbox[0], bbox[1], (0,0,255), 6)
+        bbox_list.append(bbox)
     # Return the image
-    return img
+    return bbox_list
 
 def run_images():
     testFiles = glob.glob('test_images/*.jpg')
@@ -153,7 +142,10 @@ def run_images():
         heatmap = apply_threshold(heatmap, 2)
         # Find final boxes from heatmap using label function
         labels = label(heatmap)
-        filter_img = draw_labeled_bboxes(np.copy(image), labels)
+        filter_img = np.copy(image)
+        labeled_bbox_list = get_labled_bboxes(labels)
+        for bbox in labeled_bbox_list:
+            cv2.rectangle(filter_img, bbox[0], bbox[1],(0,0,255),6) 
 
         print(labels[1], 'cars found')
         plt.title('label image')
@@ -171,41 +163,42 @@ def run_images():
         #plt.show(block=True)
 
 def process_image_with_vehicle_detection(img):
-    global heatmap, num_frames, recent_heats
-    bbox_list = []
-    for scale in [1, 1.25, 1.75]:
-        bbox_list += find_cars(img, ystart, ystop, scale, svc, X_scaler,
-                colorspace, orient, pix_per_cell, cell_per_block, hog_channel,
-                spatial_size=(spatial, spatial), hist_bins=histbin)
-    #for ystart, ystop, scale in [(y1, y2, 1), (y1, y3, 1.25), (y2, y3, 1.75)]:
-        #bbox_list += find_cars(img, ystart, ystop, scale, svc, X_scaler,
-                #colorspace, orient, pix_per_cell, cell_per_block, hog_channel,
-                #spatial_size=(spatial, spatial), hist_bins=histbin)
+    global recent_heats, frame_counter, labeled_bbox_list
 
-    if len(recent_heats) == num_frames:
-        heatmap = remove_heat(heatmap, recent_heats.popleft())
+    if frame_counter%2 == 0:
+        bbox_list = []
+        #for scale in [1.25, 1.75]:
+            #bbox_list += find_cars(img, ystart, ystop, scale, svc, X_scaler,
+                    #colorspace, orient, pix_per_cell, cell_per_block, hog_channel,
+                    #spatial_size=(spatial, spatial), hist_bins=histbin)
+        #for ystart, ystop, scale in [(y1, y3, 1.75), (y1, y4, 1.25), (y1, y3, 0.75), (y1, y3, 2.5)]:
+        #for ystart, ystop, scale in [(y1, y3, 1.75), (y1, y4, 1.25), (y1, y3,0.75), (y1, y3, 0.5)]:
+        #for ystart, ystop, scale in [(y1, y4, 1.25), (y1, y4, 1), (y1, y3, 1.75)]:
+        #for ystart, ystop, scale in [(y1, y4, 1.25), (425, 525, 1.5)]:
+        for ystart, ystop, scale in [(y1, y4, 1.25), (425, 525, 1.5), (425, 525, 1.75)]:
+            bbox_list += find_cars(img, ystart, ystop, scale, svc, X_scaler,
+                    colorspace, orient, pix_per_cell, cell_per_block, hog_channel,
+                    spatial_size=(spatial, spatial), hist_bins=histbin)
 
-    #correct_heatmap = np.zeros_like(img[:,:,0]).astype(np.float)
-    #if np.allclose(correct_heatmap, heatmap) == False:
-        #print('heatamp after remove is not all zeros')
-    #correct_heatmap = add_heat(correct_heatmap, bbox_list)
+        # Add heat to each box in bounding-box list
+        cur_heat = np.zeros_like(img[:,:,0]).astype(np.float)
+        cur_heat = add_heat(cur_heat, bbox_list)
+        recent_heats.append(cur_heat)
 
-    # Add heat to each box in bounding-box list
-    heatmap = add_heat(heatmap, bbox_list)
-    recent_heats.append(bbox_list)
+        heatmap = sum(recent_heats)
 
-    #if np.array_equal(correct_heatmap, heatmap) == False:
-        #print('heatamp after add is not the same')
+        # Apply threshold to help remove false positives
+        #thresh_map = apply_threshold(heatmap, 5)
+        thresh_map = apply_threshold(heatmap, 3)
+        # Find final boxes from heatmap using label function
+        labels = label(thresh_map)
+        labeled_bbox_list = get_labeled_bboxes(labels)
 
-    # Apply threshold to help remove false positives
-    thresh_map = apply_threshold(heatmap, 2)
-    # Find final boxes from heatmap using label function
-    labels = label(thresh_map)
-
-    #lane_img = process_image(img)
-    #vehicle_img = draw_labeled_bboxes(lane_img, labels)
-    vehicle_img = draw_labeled_bboxes(img, labels)
-    return vehicle_img
+    img = process_image(img)
+    for bbox in labeled_bbox_list:
+        cv2.rectangle(img, bbox[0], bbox[1],(0,0,255),6) 
+    frame_counter+=1
+    return img
 
 def process_video(in_name, out_name):
     from moviepy.editor import VideoFileClip
@@ -214,8 +207,19 @@ def process_video(in_name, out_name):
     processed_clip1 = clip1.fl_image(process_image_with_vehicle_detection) #NOTE: this function expects color images!!
     processed_clip1.write_videofile(output1, audio=False)
 
+# FIXME: pw debug
+#image = mpimg.imread('./test_videos/4.jpg')
+#cv2.line(image, (0, 400), (1280, 400), (0, 0, 255), 3)
+#cv2.line(image, (0, 450), (1280, 450), (0, 0, 255), 3)
+#cv2.line(image, (0, 500), (1280, 500), (0, 0, 255), 3)
+#cv2.line(image, (0, 550), (1280, 550), (0, 0, 255), 3)
+#cv2.line(image, (0, 600), (1280, 600), (0, 0, 255), 3)
+#plt.imshow(image)
+#plt.show(block=True)
+#quit()
+
 # Load the saved model and conifg.
-saved = joblib.load('./model5.sav')
+saved = joblib.load('./model4.sav')
 svc = saved['model']
 X_scaler = saved['X_scaler']
 config = saved['config']
@@ -233,17 +237,29 @@ print('Using colorspace:', colorspace, 'spatial binning of', spatial, histbin,'h
 ystart = 400
 ystop = 650
 
-#run_images()
 y1 = 400
-y2 = 450
-y3 = 650
+y2 = 500
+y3 = 550
+y4 = 650
+
+#run_images()
 
 # For processing video
-#heatmap = np.zeros((720, 1280), dtype=np.float) # FIXME. debug
-heatmap = np.zeros_like(mpimg.imread('test_images/test1.jpg')[:,:,0]).astype(np.float)
-num_frames = 1
+num_frames = 3
 recent_heats = collections.deque(maxlen=num_frames)
-#process_video('./test_videos/1.mp4', './test_videos/1_processed_5.mp4')
-#process_video('./test_videos/2.mp4', './test_videos/2_processed_1.mp4')
-#process_video('./test_videos/test_video_1.mp4', './test_videos/test_video_1_processed_4.mp4')
-process_video('./test_video.mp4', './test_video_processed_6.mp4')
+frame_counter = 0
+labeled_bbox_list = None
+
+# For lane lines
+processor = ImageProcessor()
+left_line = Line()
+right_line = Line()
+
+#process_video('./test_videos/1.mp4', './test_videos/1_processed_21_175.mp4')
+#process_video('./test_videos/2.mp4', './test_videos/2_processed_4.mp4')
+#process_video('./test_videos/3.mp4', './test_videos/3_processed_4.mp4')
+#process_video('./test_videos/4.mp4','./test_videos/4_processed_22_125_150_3_2_06.mp4')
+#process_video('./test_videos/5.mp4', './test_videos/5_processed_2.mp4')
+process_video('./test_videos/test_video_1.mp4', './test_videos/test_video_1_processed_17.mp4')
+#process_video('./test_video.mp4', './test_video_processed_7.mp4')
+#process_video('./project_video.mp4', './project_video_processed_5.mp4')
