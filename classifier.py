@@ -10,7 +10,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.externals import joblib
 import time
 
-from features_extract import extract_features
+from features_extract import convert_color, bin_spatial, color_hist, get_hog_features, extract_features, plotTwo
 
 # Define a function to return some characteristics of the dataset 
 def data_look(car_list, notcar_list):
@@ -25,23 +25,32 @@ def data_look(car_list, notcar_list):
     data_dict["image_shape"] = example_img.shape
     # Define a key "data_type" and store the data type of the test image.
     data_dict["data_type"] = example_img.dtype
+
     return data_dict
 
 # Read in cars and non-car images
 cars = glob.glob('classifier_inputs/vehicles/*/*/*.png')
 notcars = glob.glob('classifier_inputs/non-vehicles/*/*/*.png')
 
-data_dict = data_look(cars, notcars)
-print(data_dict)
+data_look(cars, notcars)
 
 # Parameters for features extraction
 colorspace = 'YCrCb' # Can be RGB, HSV, LUV, HLS, YUV, YCrCb
 spatial = 16 # number of spatial bins
-histbin = 16 # number of histogram bins
+histbin = 8 # number of histogram bins
 orient = 8 # numbre of HOG orientations bins (typically between 6 and 12)
 pix_per_cell = 8 # HOG pixels per cell
 cell_per_block = 2 # HOG cells per block
 hog_channel = 'ALL' # Can be 0, 1, 2, or 'ALL'
+
+# Test
+#for inName, outName in [(cars[100], 'car'), (notcars[100], 'notcar')]:
+#    img = cv2.imread(inName)
+#    img = convert_color(img, colorspace, 'from_BGR', plot = True, name = outName)
+#    bin_spatial(img, (spatial, spatial), plot = True, name = outName)
+#    color_hist(img, histbin, (0, 256), plot = True, name = outName)
+#    hog_features, hog_img = get_hog_features(img[:,:,0], orient, pix_per_cell, cell_per_block, vis=True, feature_vec=False)
+#    plotTwo((img[:,:,0], hog_img), ('original', 'hog_image'), outName+'-hog_image')
 
 t=time.time()
 car_features = extract_features(cars, cspace=colorspace, spatial_size=(spatial, spatial), hist_bins=histbin, hist_range=(0,256),
@@ -86,5 +95,5 @@ t2 = time.time()
 print(round(t2-t, 5), 'Seconds to predict', n_predict,'labels with SVC')
 
 # Save model and config
-#config = dict(colorspace=colorspace, spatial=spatial, histbin=histbin, orient=orient, pix_per_cell=pix_per_cell, cell_per_block=cell_per_block, hog_channel=hog_channel)
-#joblib.dump({'model':svc, 'X_scaler':X_scaler, 'config':config}, 'model5.sav')
+config = dict(colorspace=colorspace, spatial=spatial, histbin=histbin, orient=orient, pix_per_cell=pix_per_cell, cell_per_block=cell_per_block, hog_channel=hog_channel)
+joblib.dump({'model':svc, 'X_scaler':X_scaler, 'config':config}, 'model8.sav')
