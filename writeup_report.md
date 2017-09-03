@@ -98,7 +98,7 @@ To filter false positives, heatmap is created based on positive detections in ea
 
 In my implementation, I sum the heatmaps of the last 5 frames and the heatmap of the current frame, and thresholded by `10`.   
 
-In addition, to increase the positive detections, a multi-scale window search was performed here. Scale of 1.25 and 1.5 are performed on the image at position between `y = 400` to `y = 650`. Moreover, such scaling doesn't give enough positive detections on vehicles at right-upper region, which are the most further away from the camera (i.e. the vehicles are much smaller). The white car in the below image is an example:
+In addition, to increase the positive detections, a multi-scale window search was performed here. Scale of 1.25 and 1.5 are performed on the image at position between `y = 400` to `y = 650`. However, such scaling doesn't give enough positive detections on vehicles at right-upper region, which are the most further away from the camera (i.e. the vehicles are much smaller). The white car in the below image is an example:
 
 ![alt text][image10]
 
@@ -118,7 +118,7 @@ where `y1 = 400` and `y4 = 650`. Here is an example showing different regions:
 
 ![alt text][image12]
 
-The scaling idea is based on the relative vehicle size to decide scale up/down. For example, the furthest vehicle should be scaled up (thus, set to 0.75), and to help detect the exiting vehicle, `cells_per_step = 1` is given using the existing scale of 1.25 and 1.5 to increase chances of detection.
+The scaling idea is to scale up or down based on the relative sizes between detected and un-detected vehicles. For example, the furthest vehicle should be scaled up as it is smaller (thus set to 0.75), and to increase chances of detecting the vehicle exiting the video, a smaller `cells_per_step` is used (set to 1).
 
 Note that the region is hard coded which can only work on the project video. A better approach is needed.
 
@@ -132,8 +132,8 @@ Here's an example result showing the resulting bounding boxes overlaid on the la
 
 ####1. Briefly discuss any problems / issues you faced in your implementation of this project.  Where will your pipeline likely fail?  What could you do to make it more robust?
 
-Before I caught the issue of `YCrCb` 0-1 scale, the classifier gave 0.98 accuracy, and somehow produced false positives that were not filtered out heatmap thresholding, and I had to play with `svc.decision_function()` instead of `svc.predict()`.
+Before I caught the issue of `YCrCb` 0-1 scale, the classifier gave 0.98 accuracy, and somehow produced false positives that were not filtered out heatmap thresholding, and I had to play with `svc.decision_function()`.
 
-The other thing I could do better is the one mentioned above, the hard-coded region, that can only works on the project video. I tried to use the lane detected from the previous project to estimate the region, but didn't get reliable results within limited time I have now.
+The other thing I could do better is the one mentioned above, the hard-coded region, that can only work for the project video. I tried to use the lane detected from the previous project to estimate the region, but didn't get reliable results with the limited time I have now.
 
-The last thing is that even I've spent many efforts on those regions for the vehicles harder to detect, in particular, the vehicles exiting the video, the results are still not that good. Perhaps the training image of such vehicles should be added. Most of images we use were taken from the back of the vehicles.
+The last thing is that even I've spent many efforts on those regions where the vehicles hard to detect, the results are still not that good, in particular, the vehicles exiting the video. Perhaps such images should be added for training classifier, because it seems that most of images we use were taken from the back of the vehicles.
