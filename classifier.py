@@ -86,5 +86,5 @@ t2 = time.time()
 print(round(t2-t, 5), 'Seconds to predict', n_predict,'labels with SVC')
 
 # Save model and config
-config = dict(colorspace=colorspace, spatial=spatial, histbin=histbin, orient=orient, pix_per_cell=pix_per_cell, cell_per_block=cell_per_block, hog_channel=hog_channel)
-joblib.dump({'model':svc, 'X_scaler':X_scaler, 'config':config}, 'model5.sav')
+#config = dict(colorspace=colorspace, spatial=spatial, histbin=histbin, orient=orient, pix_per_cell=pix_per_cell, cell_per_block=cell_per_block, hog_channel=hog_channel)
+#joblib.dump({'model':svc, 'X_scaler':X_scaler, 'config':config}, 'model5.sav')

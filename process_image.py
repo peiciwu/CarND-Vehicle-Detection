@@ -293,6 +293,15 @@ class Line:
 
         return True
 
+    # The point of the line at the bottom image:
+    def bottom(self, fit):
+        pt = self.best_fit[0]*ploty[-1]**2 + self.best_fit[1]*ploty[-1] + self.best_fit[2]
+        return pt
+
+    # In real world pixel
+    def bottom_pixel(self):
+        return self.bottom() * xm_per_pixel
+
 def cal_radius_of_curvature(fit):
     fitx = fit[0]*ploty**2 + fit[1]*ploty + fit[2]
     # Fit new polynomials to x, y in world space
