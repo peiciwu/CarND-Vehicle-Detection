@@ -22,12 +22,7 @@ The goals / steps of this project are the following:
 [image10]: ./output_images/multi_scale_1.png
 [image11]: ./output_images/multi_scale_2.png
 [image12]: ./output_images/multi_scale_3.png
-[image3]: ./examples/sliding_windows.jpg
-[image4]: ./examples/sliding_window.jpg
-[image5]: ./examples/bboxes_and_heat.png
-[image6]: ./examples/labels_map.png
-[image7]: ./examples/output_bboxes.png
-[video1]: ./project_video.mp4
+[image13]: ./output_images/final.jpg
 
 ## [Rubric](https://review.udacity.com/#!/rubrics/513/view) Points
 ###Here I will consider the rubric points individually and describe how I addressed each point in my implementation.  
@@ -87,6 +82,7 @@ Here are some example images:
 ![alt text][image7]
 ![alt text][image8]
 ![alt text][image9]
+
 ---
 
 ### Video Implementation
@@ -126,19 +122,9 @@ The scaling idea is based on the relative vehicle size to decide scale up/down. 
 
 Note that the region is hard coded which can only work on the project video. A better approach is needed.
 
-Here's an example result showing the heatmap from a series of frames of video after multi-scaling, the result of `scipy.ndimage.measurements.label()` and the bounding boxes then overlaid on the last frame of video:
+Here's an example result showing the resulting bounding boxes overlaid on the last frame after six frames of video:
 
-### Here are six frames and their corresponding heatmaps:
-
-![alt text][image5]
-
-### Here is the output of `scipy.ndimage.measurements.label()` on the integrated heatmap from all six frames:
-![alt text][image6]
-
-### Here the resulting bounding boxes are drawn onto the last frame in the series:
-![alt text][image7]
-
-
+![alt text][image13]
 
 ---
 
@@ -146,5 +132,8 @@ Here's an example result showing the heatmap from a series of frames of video af
 
 ####1. Briefly discuss any problems / issues you faced in your implementation of this project.  Where will your pipeline likely fail?  What could you do to make it more robust?
 
-Here I'll talk about the approach I took, what techniques I used, what worked and why, where the pipeline might fail and how I might improve it if I were going to pursue this project further.  
+Before I caught the issue of `YCrCb` 0-1 scale, the classifier gave 0.98 accuracy, and somehow produced false positives that were not filtered out heatmap thresholding, and I had to play with `svc.decision_function()` instead of `svc.predict()`.
 
+The other thing I could do better is the one mentioned above, the hard-coded region, that can only works on the project video. I tried to use the lane detected from the previous project to estimate the region, but didn't get reliable results within limited time I have now.
+
+The last thing is that even I've spent many efforts on those regions for the vehicles harder to detect, in particular, the vehicles exiting the video, the results are still not that good. Perhaps the training image of such vehicles should be added. Most of images we use were taken from the back of the vehicles.
