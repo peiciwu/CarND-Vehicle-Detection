@@ -116,7 +116,8 @@ def run_images():
         image = mpimg.imread(img_file)
         bbox_list = []
         #for scale in [1, 1.25, 1.5, 1.75]:
-        for scale in [1, 1.5]:
+        #for scale in [1, 1.5]:
+        for scale in [1.25]:
             bbox_list += find_cars(image, ystart, ystop, 0, 1280, scale, svc, X_scaler,
                     colorspace, orient, pix_per_cell, cell_per_block, hog_channel,
                     spatial_size=(spatial, spatial), hist_bins=histbin,
@@ -128,11 +129,12 @@ def run_images():
         plt.imshow(draw_img)
         plt.show(block=True)
 
+        ### Below is to test heatmap ###
+        """
         heatmap = np.zeros_like(image[:,:,0]).astype(np.float)
         # Add heat to each box in bounding-box list
         heatmap = add_heat(heatmap, bbox_list)
         # Apply threshold to help remove false positives
-        #heatmap = apply_threshold(heatmap, 2)
         heatmap = apply_threshold(heatmap, 1)
         # Find final boxes from heatmap using label function
         labels = label(heatmap)
@@ -149,12 +151,8 @@ def run_images():
         plt.title('Filtered Detected image')
         plt.imshow(filter_img)
         plt.show(block=True)
+        """
 
-        # FIXME: for drawing lane lines
-        #lane_img = process_image(image, to_draw_img = filter_img)
-        #plt.title('Filtered Detected image with lane lines')
-        #plt.imshow(lane_img)
-        #plt.show(block=True)
 
 def process_image_with_vehicle_detection(img):
     global recent_heats, frame_counter, labeled_bbox_list
@@ -165,9 +163,12 @@ def process_image_with_vehicle_detection(img):
         #for ystart, ystop, xstart, xstop, scale, step in [(y1, y4, 0, 1280,
         #    1.25, 2), (y1, y4, 0, 1280, 1.5, 2), (500, y4, 1100, 1280, 1, 2),
         #    (y1, 500, 0, 1280, 1, 2)]:
+        #for ystart, ystop, xstart, xstop, scale, step in [(y1, y4, 0, 1280,
+        #    1.25, 2), (y1, y4, 0, 1280, 1.5, 2), (y1, y4, 1100, 1280, 1.25, 1),
+        #    (y1, 500, 0, 1280, 1, 2), (y1, y4, 1100, 1280, 1.5, 1)]:
         for ystart, ystop, xstart, xstop, scale, step in [(y1, y4, 0, 1280,
             1.25, 2), (y1, y4, 0, 1280, 1.5, 2), (y1, y4, 1100, 1280, 1.25, 1),
-            (y1, 500, 0, 1280, 1, 2), (y1, y4, 1100, 1280, 1.5, 1)]:
+            (y1, y4, 900, 1100, 0.75, 2), (y1, y4, 1100, 1280, 1.5, 1)]:
             bbox_list += find_cars(img, ystart, ystop, xstart, xstop, scale, svc, X_scaler,
                     colorspace, orient, pix_per_cell, cell_per_block, hog_channel,
                     spatial_size=(spatial, spatial), hist_bins=histbin,
@@ -248,10 +249,10 @@ labeled_bbox_list = None
 #process_video('./test_videos/1.mp4', './test_videos/1_processed_fix.mp4')
 #process_video('./test_videos/2.mp4', './test_videos/2_processed_4.mp4')
 #process_video('./test_videos/3.mp4', './test_videos/3_processed_4.mp4')
-process_video('./test_videos/4.mp4','./test_videos/4_processed_fix_pred_9.mp4')
+#process_video('./test_videos/4.mp4','./test_videos/4_processed_fix_pred_10.mp4')
 #process_video('./test_videos/5.mp4', './test_videos/5_processed_fix.mp4')
-#process_video('./test_videos/7.mp4', './test_videos/7_processed_fix_pred_6.mp4')
+#process_video('./test_videos/7.mp4', './test_videos/7_processed_fix_pred_7.mp4')
 #process_video('./test_videos/8.mp4', './test_videos/8_processed_fix_pred_1.mp4')
 #process_video('./test_videos/test_video_1.mp4','./test_videos/test_video_1_processed_woskip_thresh7_frame4_dec02.mp4')
 #process_video('./test_video.mp4', './test_video_processed_8.mp4')
-#process_video('./project_video.mp4','./project_video_processed_0902_5.mp4')
+process_video('./project_video.mp4','./project_video_processed_0903_1.mp4')
