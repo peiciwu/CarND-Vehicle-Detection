@@ -78,7 +78,7 @@ def find_cars(img, ystart, ystop, xstart, xstop, scale, svc, X_scaler, colorspac
             #test_prediction = int(svc.decision_function(test_features) > 0.15)
             test_prediction = int(svc.decision_function(test_features) > 0.2)
             #test_prediction = int(svc.decision_function(test_features) > 0.3)
-            ##test_prediction = int(svc.decision_function(test_features) > 0.4)
+            #test_prediction = int(svc.decision_function(test_features) > 0.4)
             #test_prediction = int(svc.decision_function(test_features) > 0.5)
             #test_prediction = int(svc.decision_function(test_features) > 0.6)
             #test_prediction = int(svc.decision_function(test_features) > 0.7)
@@ -189,9 +189,12 @@ def process_image_with_vehicle_detection(img):
         #for ystart, ystop, xstart, xstop, scale, step in [(y1, y4, 0, 1280,
         #    1.25, 2), (y1, y4, 1100, 1280, 1.5, 1), (y1, y4, 1100, 1280, 1.25,
         #        1), (y1, 500, 0, 1280, 1.25, 1), (y1, y4, 1100, 1280, 1, 1)]:
+        #for ystart, ystop, xstart, xstop, scale, step in [(y1, y4, 0, 1280,
+        #    1.25, 2), (y1, y4, 1100, 1280, 1.5, 1), (y1, y4, 1100, 1280, 1.25,
+        #        1), (y1, 500, 0, 1280, 1.25, 1)]:
         for ystart, ystop, xstart, xstop, scale, step in [(y1, y4, 0, 1280,
-            1.25, 2), (y1, y4, 1100, 1280, 1.5, 1), (y1, y4, 1100, 1280, 1.25,
-                1), (y1, 500, 0, 1280, 1.25, 1)]:
+            1.25, 2), (y1, y4, 0, 1280, 1.5, 2), (500, y4, 1100, 1280, 1, 2),
+            (y1, 500, 0, 1280, 1, 2)]:
             bbox_list += find_cars(img, ystart, ystop, xstart, xstop, scale, svc, X_scaler,
                     colorspace, orient, pix_per_cell, cell_per_block, hog_channel,
                     spatial_size=(spatial, spatial), hist_bins=histbin,
@@ -263,7 +266,7 @@ y4 = 650
 #run_images()
 
 # For processing video
-num_frames = 3
+num_frames = 2
 recent_heats = collections.deque(maxlen=num_frames)
 frame_counter = 0
 labeled_bbox_list = None
@@ -271,9 +274,9 @@ labeled_bbox_list = None
 #process_video('./test_videos/1.mp4', './test_videos/1_processed_21_175.mp4')
 #process_video('./test_videos/2.mp4', './test_videos/2_processed_4.mp4')
 #process_video('./test_videos/3.mp4', './test_videos/3_processed_4.mp4')
-#process_video('./test_videos/4.mp4','./test_videos/4_processed_new_2.mp4')
+#process_video('./test_videos/4.mp4','./test_videos/4_processed_new_3.mp4')
 #process_video('./test_videos/5.mp4', './test_videos/5_processed_new_new_new_thresh5.mp4')
-#process_video('./test_videos/6.mp4', './test_videos/6_processed_test.mp4')
-#process_video('./test_videos/test_video_1.mp4','./test_videos/test_video_1_processed_test_final_dec015_thresh5_frame3.mp4')
-#process_video('./test_video.mp4', './test_video_processed_7.mp4')
-process_video('./project_video.mp4', './project_video_processed_6.mp4')
+#process_video('./test_videos/7.mp4', './test_videos/7_processed_thresh5_frame2_testScale_7.mp4')
+#process_video('./test_videos/test_video_1.mp4','./test_videos/test_video_1_processed_woskip_thresh7_frame4_dec02.mp4')
+#process_video('./test_video.mp4', './test_video_processed_8.mp4')
+process_video('./project_video.mp4','./project_video_processed_0902_5.mp4')
